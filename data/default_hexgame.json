@@ -1,0 +1,18 @@
+[
+    {
+    "title": "Name",
+    "content": "Dr. Jan Stubenrauch"
+},
+{
+    "title": "Enstanden",
+    "content": "04.2023"
+},
+{
+    "title": "Schule",
+    "content": "BBZ-Dormagen"
+},
+{
+    "title": "test",
+    "content": "<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'><munderover><mo>&#x2211;<!-- ∑ --></mo><mrow class='MJX-TeXAtom-ORD'><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mi>n</mi></munderover><mi>i</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo stretchy='false'>(</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo stretchy='false'>)</mo></mrow><mn>2</mn></mfrac><mo>.</mo></math>"
+}
+]

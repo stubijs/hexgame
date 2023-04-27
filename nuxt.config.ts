@@ -14,6 +14,6 @@ export default defineNuxtConfig({
       default: {
         httpEndpoint: 'https://cms.jstubenrauch.de/graphql'
       }
-    },
-  },
+    }
+  }
 })

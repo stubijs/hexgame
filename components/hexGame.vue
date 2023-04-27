@@ -8,7 +8,7 @@ import {
   RepeatWrapping, DoubleSide, BoxGeometry, Mesh, PointLight, MeshPhysicalMaterial, PerspectiveCamera,
   Scene, PMREMGenerator, PCFSoftShadowMap,
   Vector2, TextureLoader, SphereGeometry, MeshStandardMaterial,
-  ConeGeometry, Raycaster
+  ConeGeometry, Raycaster, MOUSE
 } from 'three'
 import type { Texture } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
@@ -25,14 +25,15 @@ import {
 } from '@headlessui/vue'
 import sampleSize from 'lodash/sampleSize'
 import defaultHexgame from '@/data/default_hexgame.json'
+import anleitung from '@/data/anleitung.json'
 
 // ----------------------------------------------------------  modal -------------------------
 
 const isOpen = ref(false)
 const modalNumber = ref('0')
 
-const modaltitle = ref('Das wäre der Titel für das Modal')
-const modaltext = ref('Das wäre der Text für das Modal')
+const modaltitle = ref(anleitung[0].title)
+const modaltext = ref(anleitung[0].content)
 
 function setIsOpen (value) {
   isOpen.value = value
@@ -66,13 +67,11 @@ const props = withDefaults(defineProps<Props>(), {
   hexData: defaultHexgame
 })
 
-const threeCanvas = ref()
-
 onMounted(() => {
   const scene = new Scene()
   scene.background = new Color('#FFEECC')
 
-  const camera = new PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 1000)
+  const camera = new PerspectiveCamera(45, (innerWidth - 1) / (innerHeight -1), 0.1, 1000)
   camera.position.set(-17, 31, 33)
 
   const raycaster = new Raycaster()
@@ -82,13 +81,13 @@ onMounted(() => {
     antialias: true,
     canvas: threeCanvas.value as HTMLCanvasElement
   })
-  renderer.setSize(innerWidth, innerHeight)
+  renderer.setSize(innerWidth - 1, innerHeight - 1)
   renderer.toneMapping = ACESFilmicToneMapping
   renderer.outputEncoding = sRGBEncoding
   renderer.useLegacyLights = true
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = PCFSoftShadowMap
-  document.body.appendChild(renderer.domElement)
+  document.getElementById('threeCanvas').appendChild(renderer.domElement)
 
   const light = new PointLight(new Color('#FFCB8E').convertSRGBToLinear().convertSRGBToLinear(), 10, 100)
   light.position.set(10, 20, 10)
@@ -418,7 +417,7 @@ onMounted(() => {
     render()
   }
 
-  async function render () {
+  async function render() {
     const delay = ms => new Promise(res => setTimeout(res, ms))
 
     // update the picking ray with the camera and pointer position
@@ -451,10 +450,31 @@ onMounted(() => {
 
   init()
   window.addEventListener('click', onPointerClick)
+
+window.addEventListener('resize', onWindowResize)
+
+function onWindowResize(){
+  camera.aspect = (innerWidth -1 ) / (innerHeight - 1);
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(innerWidth - 1, innerHeight - 1);
+}
+
 })
+
+function help(){
+  setModalNumber()
+  setModalTitel(anleitung[0].title)
+        setModalText(anleitung[0].content)
+        setIsOpen(true)
+
+}
 </script>
 
 <template>
+  <div class="absolute top-2 right-2 rounded-full cursor-pointer bg-blue-100 p-2 border-2 border-blue-900 px-4 font-bold" @click="help()">
+    ?
+  </div>
   <div id="threeCanvas" />
   <TransitionRoot :show="isOpen" as="template">
     <Dialog :open="isOpen" class="relative z-50" @close="setIsOpen">
@@ -482,27 +502,26 @@ onMounted(() => {
         >
           <!-- The actual dialog panel -->
           <DialogPanel
-            class="sm:w-full sm:max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+            class="w-full sm:w-[500px] transform overflow-hidden rounded-2xl bg-white p-4 text-left align-middle shadow-xl transition-all"
           >
             <DialogTitle
               as="h3"
               class="text-lg font-medium leading-6 text-gray-900"
             >
-              Hinweis Nr. {{ modalNumber }}
+            <span v-html="modaltitle"></span> (Nr. {{ modalNumber }})
             </DialogTitle>
 
-            <div class="mt-2">
-              <p class="h3 text-gray-500 pb-2" v-html="modaltitle" />
-              <p class="text-sm text-gray-500" v-html="modaltext" />
+            <div class="mt-1 pt-1 border-blue-100 border-t-2">
+              <p class="text-sm text-gray-500" v-html="modaltext"></p>
             </div>
 
             <div class="mt-4">
               <button
                 type="button"
-                class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                class="w-full inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 @click="setIsOpen(false)"
               >
-                Ich hab's, danke!
+                Schließen
               </button>
             </div>
           </DialogPanel>

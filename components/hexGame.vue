@@ -34,21 +34,28 @@ const modalNumber = ref('0')
 
 const modaltitle = ref(anleitung[0].title)
 const modaltext = ref(anleitung[0].content)
+const modalimage = ref('')
+const modalimageShow = ref(false)
 
-function setIsOpen (value) {
+function setIsOpen (value = false) {
   isOpen.value = value
 }
 
-function setModalNumber (value) {
+function setModalTitel (value = '') {
+  modaltitle.value = value
+}
+
+function setModalNumber (value = '0') {
   modalNumber.value = value
 }
 
-function setModalText (value) {
+function setModalText (value = '') {
   modaltext.value = value
 }
 
-function setModalTitel (value) {
-  modaltitle.value = value
+function setModalImage (value = '') {
+  if (value.length > 0) { modalimageShow.value = true } else { modalimageShow.value = false }
+  modalimage.value = 'https://cms.jstubenrauch.de/assets/' + value
 }
 
 // ---------------------------------------------------------- three.js -----------------------
@@ -60,7 +67,7 @@ type hexDataType = {
 }
 
 interface Props {
-  hexData?: hexDataType | undefined,
+  hexData: hexDataType[],
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -71,7 +78,7 @@ onMounted(() => {
   const scene = new Scene()
   scene.background = new Color('#FFEECC')
 
-  const camera = new PerspectiveCamera(45, (innerWidth - 1) / (innerHeight -1), 0.1, 1000)
+  const camera = new PerspectiveCamera(45, (innerWidth - 1) / (innerHeight - 1), 0.1, 1000)
   camera.position.set(-17, 31, 33)
 
   const raycaster = new Raycaster()
@@ -110,7 +117,7 @@ onMounted(() => {
   let envmap: Texture
 
   const MAX_HEIGHT = 10
-  const coordsMarkerMax = []
+  const coordsMarkerMax: { height: any; position: any }[] = []
 
   async function init () {
     const envmapTexture = await new RGBELoader().loadAsync('/envmap.hdr')
@@ -400,14 +407,14 @@ onMounted(() => {
     scene.add(mesh)
   }
 
-  function coordsMaxPush (getHeight, getPosition) {
+  function coordsMaxPush (getHeight: number, getPosition: Vector2) {
     coordsMarkerMax.push({
       height: getHeight,
       position: getPosition
     })
   }
 
-  function onPointerClick (event) {
+  function onPointerClick (event: { clientX: number; clientY: number }) {
     // calculate pointer position in normalized device coordinates
     // (-1 to +1) for both components
 
@@ -417,8 +424,8 @@ onMounted(() => {
     render()
   }
 
-  async function render() {
-    const delay = ms => new Promise(res => setTimeout(res, ms))
+  async function render () {
+    const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms))
 
     // update the picking ray with the camera and pointer position
     raycaster.setFromCamera(pointer, camera)
@@ -432,12 +439,7 @@ onMounted(() => {
         intersects[0].object.material.color.set(0xFF0000)
         setModalTitel(props.hexData[Number(intersects[0].object.userData.MODALNUMBER) - 1].title)
         setModalText(props.hexData[Number(intersects[0].object.userData.MODALNUMBER) - 1].content)
-        if ('MathJax' in window) {
-          window.MathJax.typeset()
-          nextTick(() => {
-            window.MathJax.typeset()
-          })
-        }
+        setModalImage(props.hexData[Number(intersects[0].object.userData.MODALNUMBER) - 1].image)
         setIsOpen(true)
         setModalNumber(intersects[0].object.userData.MODALNUMBER)
         await delay(500)
@@ -451,23 +453,21 @@ onMounted(() => {
   init()
   window.addEventListener('click', onPointerClick)
 
-window.addEventListener('resize', onWindowResize)
+  window.addEventListener('resize', onWindowResize)
 
-function onWindowResize(){
-  camera.aspect = (innerWidth -1 ) / (innerHeight - 1);
-  camera.updateProjectionMatrix();
+  function onWindowResize () {
+    camera.aspect = (innerWidth - 1) / (innerHeight - 1)
+    camera.updateProjectionMatrix()
 
-  renderer.setSize(innerWidth - 1, innerHeight - 1);
-}
-
+    renderer.setSize(innerWidth - 1, innerHeight - 1)
+  }
 })
 
-function help(){
+function help () {
   setModalNumber()
   setModalTitel(anleitung[0].title)
-        setModalText(anleitung[0].content)
-        setIsOpen(true)
-
+  setModalText(anleitung[0].content)
+  setIsOpen(true)
 }
 </script>
 
@@ -502,17 +502,22 @@ function help(){
         >
           <!-- The actual dialog panel -->
           <DialogPanel
-            class="w-full sm:w-[500px] transform overflow-hidden rounded-2xl bg-white p-4 text-left align-middle shadow-xl transition-all"
+            class="w-full sm:w-[7/8] transform overflow-hidden rounded-2xl bg-white p-4 text-left align-middle shadow-xl transition-all"
           >
             <DialogTitle
               as="h3"
               class="text-lg font-medium leading-6 text-gray-900"
             >
-            <span v-html="modaltitle"></span> (Nr. {{ modalNumber }})
+              <span v-html="modaltitle" /> (Nr. {{ modalNumber }})
             </DialogTitle>
 
             <div class="mt-1 pt-1 border-blue-100 border-t-2">
-              <p class="text-sm text-gray-500" v-html="modaltext"></p>
+              <template v-if="modalimageShow">
+                <div class="w-full flex justify-center">
+                  <img v-if="modalimage" :src="modalimage">
+                </div>
+              </template>
+              <p class="text-sm text-gray-500" v-html="modaltext" />
             </div>
 
             <div class="mt-4">

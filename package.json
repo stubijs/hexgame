@@ -13,7 +13,7 @@
     "mathjax:win": "move \"./node_modules/mathjax/es5/\" \"./assets/mathjax/\""
   },
   "devDependencies": {
-    "@nuxtjs/apollo": "5.0.0-alpha.6",
+    "@nuxtjs/apollo": "5.0.0-alpha.13",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "@types/node": "^18",
     "@types/three": "^0.150.1",
